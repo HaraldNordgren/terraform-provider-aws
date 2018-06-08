@@ -3147,7 +3147,11 @@ func (c *IAM) DeletePolicyRequest(input *DeletePolicyInput) (req *request.Reques
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iam-2010-05-08/DeletePolicy
 func (c *IAM) DeletePolicy(input *DeletePolicyInput) (*DeletePolicyOutput, error) {
 	req, out := c.DeletePolicyRequest(input)
-	return out, req.Send()
+	fmt.Printf("=)=)=)=)=)=)=)=)=)=) %#v 11\n", out)
+
+	send := req.Send()
+	fmt.Printf("=)=)=)=)=)=)=)=)=)=) %#v  12\n", send)
+	return out, send
 }
 
 // DeletePolicyWithContext is the same as DeletePolicy with the addition of
@@ -6115,6 +6119,8 @@ func (c *IAM) GetPolicyRequest(input *GetPolicyInput) (req *request.Request, out
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iam-2010-05-08/GetPolicy
 func (c *IAM) GetPolicy(input *GetPolicyInput) (*GetPolicyOutput, error) {
+	fmt.Printf("///////////11 %#v\n", *input)
+
 	req, out := c.GetPolicyRequest(input)
 	return out, req.Send()
 }

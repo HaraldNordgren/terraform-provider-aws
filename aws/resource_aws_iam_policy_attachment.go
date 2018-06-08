@@ -14,6 +14,36 @@ import (
 	"github.com/hashicorp/terraform/helper/validation"
 )
 
+func resourceAwsIamPolicyWithAttachment() *schema.Resource {
+	policy := resourceAwsIamPolicy()
+	policy.Create = resourceAwsIamPolicyWithAttachmentCreate
+	policy.Read = resourceAwsIamPolicyWithAttachmentRead
+	policy.Delete = resourceAwsIamPolicyWithAttachmentCascadeDelete
+
+	attachment := resourceAwsIamPolicyAttachment()
+	/*
+	attachment.Importer = &schema.ResourceImporter{
+		State: schema.ImportStatePassthrough,
+	}
+	*/
+	delete(attachment.Schema, "policy_arn")
+
+	schema := policy.Schema
+	for attachmentKey := range attachment.Schema {
+		print("!!!!!!!!!!!!!!11 ", attachmentKey, "\n")
+		switch attachmentKey {
+		case "name":
+			schema["attachment_name"] = attachment.Schema[attachmentKey]
+		default:
+			schema[attachmentKey] = attachment.Schema[attachmentKey]
+		}
+		//delete(schema, attachmentKey)
+	}
+	policy.Schema = schema
+
+	return policy
+}
+
 func resourceAwsIamPolicyAttachment() *schema.Resource {
 	return &schema.Resource{
 		Create: resourceAwsIamPolicyAttachmentCreate,
@@ -55,14 +85,32 @@ func resourceAwsIamPolicyAttachment() *schema.Resource {
 	}
 }
 
+func resourceAwsIamPolicyWithAttachmentCreate(d *schema.ResourceData, meta interface{}) error {
+	print("!!!!!!!!!!!!!!51\n")
+	if err := resourceAwsIamPolicyCreate(d, meta); err != nil {
+		return err
+	}
+	print("!!!!!!!!!!!!!!52\n")
+	return resourceAwsIamPolicyAttachmentCreator(d, "arn", meta)
+}
+
 func resourceAwsIamPolicyAttachmentCreate(d *schema.ResourceData, meta interface{}) error {
+	return resourceAwsIamPolicyAttachmentCreator(d, "policy_arn", meta)
+}
+
+func resourceAwsIamPolicyAttachmentCreator(d *schema.ResourceData, arnKey string, meta interface{}) error {
+	print("(/(/(/(/(/(/(/(/(/(/(/(/(11\n")
 	conn := meta.(*AWSClient).iamconn
 
 	name := d.Get("name").(string)
-	arn := d.Get("policy_arn").(string)
+	print("(/(/(/(/(/(/(/(/(/(/(/(/(12\n")
+	arn := d.Get(arnKey).(string)
+	print("(/(/(/(/(/(/(/(/(/(/(/(/(13\n")
 	users := expandStringList(d.Get("users").(*schema.Set).List())
 	roles := expandStringList(d.Get("roles").(*schema.Set).List())
 	groups := expandStringList(d.Get("groups").(*schema.Set).List())
+
+	print("(/(/(/(/(/(/(/(/(/(/(/(/(14\n")
 
 	if len(users) == 0 && len(roles) == 0 && len(groups) == 0 {
 		return fmt.Errorf("[WARN] No Users, Roles, or Groups specified for IAM Policy Attachment %s", name)
@@ -82,13 +130,35 @@ func resourceAwsIamPolicyAttachmentCreate(d *schema.ResourceData, meta interface
 		}
 	}
 	d.SetId(d.Get("name").(string))
-	return resourceAwsIamPolicyAttachmentRead(d, meta)
+	print("(/(/(/(/(/(/(/(/(/(/(/(/(15\n")
+	return resourceAwsIamPolicyAttachmentReader(d, arn, meta)
+}
+
+func resourceAwsIamPolicyWithAttachmentRead(d *schema.ResourceData, meta interface{}) error {
+	s := d.Get("arn").(string)
+
+	print("!!!!!!!!!!!!!! resourceAwsIamPolicyWithAttachmentRead 611", s, "\n")
+	print("!!!!!!!!!!!!!! resourceAwsIamPolicyWithAttachmentRead 612", d.Id(), "\n")
+	//return resourceAwsIamPolicyRead(d, meta)
+
+	if err := resourceAwsIamPolicyReader(d, s, meta); err != nil {
+		return err
+	}
+	print("!!!!!!!!!!!!!!62 ", d.Id(), "\n")
+	return resourceAwsIamPolicyAttachmentReader(d, d.Get("arn").(string), meta)
 }
 
 func resourceAwsIamPolicyAttachmentRead(d *schema.ResourceData, meta interface{}) error {
+	policyARN := d.Get("policy_arn").(string)
+	return resourceAwsIamPolicyAttachmentReader(d, policyARN, meta)
+}
+
+func resourceAwsIamPolicyAttachmentReader(d *schema.ResourceData, arn string, meta interface{}) error {
 	conn := meta.(*AWSClient).iamconn
-	arn := d.Get("policy_arn").(string)
+	print("!!!!!!!!!!!!!! resourceAwsIamPolicyAttachmentReader 211\n")
+	print("!!!!!!!!!!!!!! resourceAwsIamPolicyAttachmentReader 212\n")
 	name := d.Get("name").(string)
+	print("!!!!!!!!!!!!!! resourceAwsIamPolicyAttachmentReader 213\n")
 
 	_, err := conn.GetPolicy(&iam.GetPolicyInput{
 		PolicyArn: aws.String(arn),
@@ -105,6 +175,8 @@ func resourceAwsIamPolicyAttachmentRead(d *schema.ResourceData, meta interface{}
 		return err
 	}
 
+	print("!!!!!!!!!!!!!! resourceAwsIamPolicyAttachmentReader 22\n")
+
 	ul := make([]string, 0)
 	rl := make([]string, 0)
 	gl := make([]string, 0)
@@ -112,12 +184,17 @@ func resourceAwsIamPolicyAttachmentRead(d *schema.ResourceData, meta interface{}
 	args := iam.ListEntitiesForPolicyInput{
 		PolicyArn: aws.String(arn),
 	}
+
+	print("!!!!!!!!!!!!!! resourceAwsIamPolicyAttachmentReader 23\n")
+
 	err = conn.ListEntitiesForPolicyPages(&args, func(page *iam.ListEntitiesForPolicyOutput, lastPage bool) bool {
 		for _, u := range page.PolicyUsers {
+			print("!!!!!!!!!!!!!! resourceAwsIamPolicyAttachmentReader 231 ", u.String(), " \n")
 			ul = append(ul, *u.UserName)
 		}
 
 		for _, r := range page.PolicyRoles {
+			print("!!!!!!!!!!!!!! resourceAwsIamPolicyAttachmentReader 232 ", rl, " \n")
 			rl = append(rl, *r.RoleName)
 		}
 
@@ -126,6 +203,9 @@ func resourceAwsIamPolicyAttachmentRead(d *schema.ResourceData, meta interface{}
 		}
 		return true
 	})
+
+	print("!!!!!!!!!!!!!! resourceAwsIamPolicyAttachmentReader 24\n")
+
 	if err != nil {
 		return err
 	}
@@ -134,9 +214,15 @@ func resourceAwsIamPolicyAttachmentRead(d *schema.ResourceData, meta interface{}
 	roleErr := d.Set("roles", rl)
 	groupErr := d.Set("groups", gl)
 
+	for _, u := range ul {
+		print("!!!!!!!!!!!!!! resourceAwsIamPolicyAttachmentReader 241 ", u, " \n")
+	}
+
 	if userErr != nil || roleErr != nil || groupErr != nil {
 		return composeErrors(fmt.Sprint("[WARN} Error setting user, role, or group list from IAM Policy Attachment ", name, ":"), userErr, roleErr, groupErr)
 	}
+
+	print("!!!!!!!!!!!!!! resourceAwsIamPolicyAttachmentReader 25 ", d.Get("users"), "\n")
 
 	return nil
 }
@@ -161,9 +247,16 @@ func resourceAwsIamPolicyAttachmentUpdate(d *schema.ResourceData, meta interface
 }
 
 func resourceAwsIamPolicyAttachmentDelete(d *schema.ResourceData, meta interface{}) error {
+	return resourceAwsIamPolicyAttachmentDeleter(d, "policy_arn", meta)
+}
+
+func resourceAwsIamPolicyAttachmentDeleter(d *schema.ResourceData, policyARN string, meta interface{}) error {
+	print("=================11\n")
 	conn := meta.(*AWSClient).iamconn
 	name := d.Get("name").(string)
-	arn := d.Get("policy_arn").(string)
+	print("=================12\n")
+	arn := d.Get(policyARN).(string)
+	print("=================13\n")
 	users := expandStringList(d.Get("users").(*schema.Set).List())
 	roles := expandStringList(d.Get("roles").(*schema.Set).List())
 	groups := expandStringList(d.Get("groups").(*schema.Set).List())
