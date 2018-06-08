@@ -16,7 +16,13 @@ import (
 
 func resourceAwsIamPolicyWithAttachment() *schema.Resource {
 	policy := dataSourceAwsIAMPolicy()
-	resourceAwsIamPolicyAttachment()
+	attachment := resourceAwsIamPolicyAttachment()
+	for k := range attachment.Schema {
+		if k == "name" {
+			continue
+		}
+		policy.Schema[k] = attachment.Schema[k]
+	}
 
 	return policy
 }
