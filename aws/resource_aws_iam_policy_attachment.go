@@ -14,6 +14,13 @@ import (
 	"github.com/hashicorp/terraform/helper/validation"
 )
 
+func resourceAwsIamPolicyWithAttachment() *schema.Resource {
+	policy := dataSourceAwsIAMPolicy()
+	resourceAwsIamPolicyAttachment()
+
+	return policy
+}
+
 func resourceAwsIamPolicyAttachment() *schema.Resource {
 	return &schema.Resource{
 		Create: resourceAwsIamPolicyAttachmentCreate,
