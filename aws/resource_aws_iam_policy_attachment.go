@@ -15,20 +15,14 @@ import (
 )
 
 func resourceAwsIamPolicyWithAttachment() *schema.Resource {
-	print("!!!!!!!!!!!!!!!31\n")
-
 	policy := resourceAwsIamPolicy()
 	attachment := resourceAwsIamPolicyAttachment()
-
-	print("!!!!!!!!!!!!!!!33\n")
 	for k := range attachment.Schema {
 		if k == "name" {
 			continue
 		}
-		print("!!!!!!!!!!!!!!!34\n")
 		policy.Schema[k] = attachment.Schema[k]
 	}
-	print("!!!!!!!!!!!!!!!35\n")
 
 	return policy
 }
