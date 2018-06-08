@@ -14,6 +14,25 @@ import (
 	"github.com/hashicorp/terraform/helper/validation"
 )
 
+func resourceAwsIamPolicyWithAttachment() *schema.Resource {
+	policy := resourceAwsIamPolicy()
+
+	attachment := resourceAwsIamPolicyAttachment()
+	attachment.Read = resourceAwsIamPolicyWithAttachmentRead
+	delete(attachment.Schema, "policy_arn")
+
+	for attachmentKey := range attachment.Schema {
+		switch attachmentKey {
+		case "name":
+			policy.Schema["attachment_name"] = attachment.Schema[attachmentKey]
+		default:
+			policy.Schema[attachmentKey] = attachment.Schema[attachmentKey]
+		}
+	}
+
+	return policy
+}
+
 func resourceAwsIamPolicyAttachment() *schema.Resource {
 	return &schema.Resource{
 		Create: resourceAwsIamPolicyAttachmentCreate,
@@ -85,9 +104,17 @@ func resourceAwsIamPolicyAttachmentCreate(d *schema.ResourceData, meta interface
 	return resourceAwsIamPolicyAttachmentRead(d, meta)
 }
 
+func resourceAwsIamPolicyWithAttachmentRead(d *schema.ResourceData, meta interface{}) error {
+	return resourceAwsIamPolicyAttachmentReader(d, "arn", meta)
+}
+
 func resourceAwsIamPolicyAttachmentRead(d *schema.ResourceData, meta interface{}) error {
+	return resourceAwsIamPolicyAttachmentReader(d, "policy_arn", meta)
+}
+
+func resourceAwsIamPolicyAttachmentReader(d *schema.ResourceData, arnKey string, meta interface{}) error {
 	conn := meta.(*AWSClient).iamconn
-	arn := d.Get("policy_arn").(string)
+	arn := d.Get(arnKey).(string)
 	name := d.Get("name").(string)
 
 	_, err := conn.GetPolicy(&iam.GetPolicyInput{
