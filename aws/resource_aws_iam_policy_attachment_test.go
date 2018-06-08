@@ -77,14 +77,15 @@ func TestAccAWSIAMPolicyAttachment_paginatedEntities(t *testing.T) {
 	})
 }
 
-// testAccAWSPolicyWithAttachment
 func TestAccAWSIAMPolicyWithAttachment(t *testing.T) {
 	var out iam.ListEntitiesForPolicyOutput
 
+	print("!!!!!!!!!!!!!!!11\n")
+
 	rString := acctest.RandString(8)
-	userNamePrefix := fmt.Sprintf("tf-acc-user-pa-pe-%s-", rString)
-	policyName := fmt.Sprintf("tf-acc-policy-pa-pe-%s-", rString)
-	attachmentName := fmt.Sprintf("tf-acc-attachment-pa-pe-%s-", rString)
+	userNamePrefix := fmt.Sprintf("tf-acc-user-pa-pe1-%s-", rString)
+	policyName := fmt.Sprintf("tf-acc-policy-pa-pe1-%s-", rString)
+	attachmentName := fmt.Sprintf("tf-acc-attachment-pa-pe1-%s-", rString)
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
@@ -94,7 +95,7 @@ func TestAccAWSIAMPolicyWithAttachment(t *testing.T) {
 			resource.TestStep{
 				Config: testAccAWSPolicyWithAttachmentConfig(userNamePrefix, policyName, attachmentName),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckAWSPolicyAttachmentExists("aws_iam_policy_with_attachment.test-paginated-attach", 101, &out),
+					testAccCheckAWSPolicyAttachmentExists("aws_iam_policy_attachment.test-paginated-attach", 101, &out),
 				),
 			},
 		},
@@ -383,13 +384,13 @@ resource "aws_iam_policy_attachment" "test-paginated-attach" {
 
 func testAccAWSPolicyWithAttachmentConfig(userNamePrefix, policyName, attachmentName string) string {
 	return fmt.Sprintf(`
-resource "aws_iam_user" "user" {
+resource "aws_iam_user" "user_with_attachment" {
 	count = 101
-	name = "${format("%s%%d", count.index + 1)}"
+	name = "${format("%s%%d_with_attachment", count.index + 1)}"
 }
-resource "aws_iam_policy_with_attachment" "policy" {
-	name = "%s"
-	description = "A test policy"
+resource "aws_iam_policy_with_attachment" "policy_with_attachment" {
+	name = "%s_with_attachment"
+	description = "A test policy with attachment"
 	policy = <<EOF
 {
 "Version": "2012-10-17",
@@ -404,8 +405,8 @@ resource "aws_iam_policy_with_attachment" "policy" {
 ]
 }
 EOF
-	name = "${format("%s%%d", count.index + 1)}"
-	users = ["${aws_iam_user.user.*.name}"]
-	policy_arn = "${aws_iam_policy.policy.arn}"
+	policy_name = "%s_with_attachment"
+	users = ["${aws_iam_user.user_with_attachment.*.name}"]
+	policy_arn = "${aws_iam_policy.policy_with_attachment.arn}"
 }`, userNamePrefix, policyName, attachmentName)
 }
