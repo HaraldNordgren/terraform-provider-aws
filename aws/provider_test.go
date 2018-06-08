@@ -47,6 +47,7 @@ func init() {
 }
 
 func TestProvider(t *testing.T) {
+	print("!!!!!!!!!!!!!!!!22\n")
 	if err := Provider().(*schema.Provider).InternalValidate(); err != nil {
 		t.Fatalf("err: %s", err)
 	}

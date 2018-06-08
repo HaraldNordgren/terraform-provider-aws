@@ -14,6 +14,29 @@ import (
 	"github.com/hashicorp/terraform/helper/validation"
 )
 
+func resourceAwsIamPolicyWithAttachment() *schema.Resource {
+	print("!!!!!!!!!!!!!!!31\n")
+
+	policy := resourceAwsIamPolicy()
+	resourceAwsIamPolicyAttachment()
+
+	//return policy
+
+	/*
+	print("!!!!!!!!!!!!!!!33\n")
+	for k := range attachment.Schema {
+		if k == "name" {
+			continue
+		}
+		print("!!!!!!!!!!!!!!!34\n")
+		policy.Schema[k] = attachment.Schema[k]
+	}
+	print("!!!!!!!!!!!!!!!35\n")
+	*/
+
+	return policy
+}
+
 func resourceAwsIamPolicyAttachment() *schema.Resource {
 	return &schema.Resource{
 		Create: resourceAwsIamPolicyAttachmentCreate,
