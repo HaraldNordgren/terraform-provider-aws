@@ -95,7 +95,7 @@ func TestAccAWSIAMPolicyWithAttachment(t *testing.T) {
 			resource.TestStep{
 				Config: testAccAWSPolicyWithAttachmentConfig(userNamePrefix, policyName, attachmentName),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckAWSPolicyAttachmentExists("aws_iam_policy_attachment.test-paginated-attach", 101, &out),
+					testAccCheckAWSPolicyAttachmentExists("aws_iam_policy_attachment.test-paginated-attach-with-attachment", 101, &out),
 				),
 			},
 		},
@@ -405,7 +405,7 @@ resource "aws_iam_policy_with_attachment" "policy_with_attachment" {
 ]
 }
 EOF
-	policy_name = "%s_with_attachment"
+	policy_name = "%s-with-attachment"
 	users = ["${aws_iam_user.user_with_attachment.*.name}"]
 	policy_arn = "${aws_iam_policy.policy_with_attachment.arn}"
 }`, userNamePrefix, policyName, attachmentName)
