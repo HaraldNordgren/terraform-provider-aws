@@ -17,12 +17,7 @@ import (
 func resourceAwsIamPolicyWithAttachment() *schema.Resource {
 	policy := resourceAwsIamPolicy()
 	attachment := resourceAwsIamPolicyAttachment()
-	for k := range attachment.Schema {
-		if k == "name" {
-			continue
-		}
-		policy.Schema[k] = attachment.Schema[k]
-	}
+	attachment.Schema["attachment_name"] = attachment.Schema["name"]
 
 	return policy
 }
@@ -71,7 +66,11 @@ func resourceAwsIamPolicyAttachment() *schema.Resource {
 func resourceAwsIamPolicyAttachmentCreate(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*AWSClient).iamconn
 
-	name := d.Get("name").(string)
+	name := d.Get("attachment_name").(string)
+	if name == "" {
+		name = d.Get("name").(string)
+	}
+
 	arn := d.Get("policy_arn").(string)
 	users := expandStringList(d.Get("users").(*schema.Set).List())
 	roles := expandStringList(d.Get("roles").(*schema.Set).List())
