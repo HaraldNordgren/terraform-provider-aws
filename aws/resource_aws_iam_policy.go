@@ -199,8 +199,22 @@ func resourceAwsIamPolicyWithAttachmentCascadeDelete(d *schema.ResourceData, met
 	print("!!!!!!!!!!!!!!71 ", arnS, "\n")
 
 	//d.Set("user", d.Get())
-
+	/*
+	for _, user := range d.Get("users") {
+	}
 	resourceAwsIamUserPolicyAttachmentDelete(d, meta)
+	*/
+
+	print("!!!!!!!!!!!!!!711 ", d.Get("users"), "\n")
+
+	set := d.Get("users").(*schema.Set)
+	for _, v := range set.List() {
+		s := v.(string)
+		fmt.Printf("!!!!!!!!!!!!!!712 %#v\n", s)
+		resourceAwsIamUserPolicyAttachmentDeleter(d, d.Get("arn").(string), s, meta)
+	}
+
+	//resourceAwsIamUserPolicyAttachmentDeleteUsers(d, d.Get("users").([]*string), meta)
 
 	print("!!!!!!!!!!!!!!72\n")
 	v := d.Get("arn").(string)

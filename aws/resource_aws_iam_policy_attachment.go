@@ -156,18 +156,6 @@ func resourceAwsIamPolicyAttachmentRead(d *schema.ResourceData, meta interface{}
 func resourceAwsIamPolicyAttachmentReader(d *schema.ResourceData, arn string, meta interface{}) error {
 	conn := meta.(*AWSClient).iamconn
 	print("!!!!!!!!!!!!!! resourceAwsIamPolicyAttachmentReader 211\n")
-
-	//arn := d.Get(arnKey).(string)
-	/*
-	arnRaw := d.Get(arnKey)
-	var arn string
-	if arnRaw == nil {
-		arn = "hej"
-	} else {
-		arn = arnRaw.(string)
-	}
-	*/
-
 	print("!!!!!!!!!!!!!! resourceAwsIamPolicyAttachmentReader 212\n")
 	name := d.Get("name").(string)
 	print("!!!!!!!!!!!!!! resourceAwsIamPolicyAttachmentReader 213\n")
@@ -201,10 +189,12 @@ func resourceAwsIamPolicyAttachmentReader(d *schema.ResourceData, arn string, me
 
 	err = conn.ListEntitiesForPolicyPages(&args, func(page *iam.ListEntitiesForPolicyOutput, lastPage bool) bool {
 		for _, u := range page.PolicyUsers {
+			print("!!!!!!!!!!!!!! resourceAwsIamPolicyAttachmentReader 231 ", u.String(), " \n")
 			ul = append(ul, *u.UserName)
 		}
 
 		for _, r := range page.PolicyRoles {
+			print("!!!!!!!!!!!!!! resourceAwsIamPolicyAttachmentReader 232 ", rl, " \n")
 			rl = append(rl, *r.RoleName)
 		}
 
@@ -224,11 +214,15 @@ func resourceAwsIamPolicyAttachmentReader(d *schema.ResourceData, arn string, me
 	roleErr := d.Set("roles", rl)
 	groupErr := d.Set("groups", gl)
 
+	for _, u := range ul {
+		print("!!!!!!!!!!!!!! resourceAwsIamPolicyAttachmentReader 241 ", u, " \n")
+	}
+
 	if userErr != nil || roleErr != nil || groupErr != nil {
 		return composeErrors(fmt.Sprint("[WARN} Error setting user, role, or group list from IAM Policy Attachment ", name, ":"), userErr, roleErr, groupErr)
 	}
 
-	print("!!!!!!!!!!!!!! resourceAwsIamPolicyAttachmentReader 25\n")
+	print("!!!!!!!!!!!!!! resourceAwsIamPolicyAttachmentReader 25 ", d.Get("users"), "\n")
 
 	return nil
 }
