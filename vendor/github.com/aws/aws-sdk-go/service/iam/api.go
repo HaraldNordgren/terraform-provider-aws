@@ -3147,7 +3147,11 @@ func (c *IAM) DeletePolicyRequest(input *DeletePolicyInput) (req *request.Reques
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iam-2010-05-08/DeletePolicy
 func (c *IAM) DeletePolicy(input *DeletePolicyInput) (*DeletePolicyOutput, error) {
 	req, out := c.DeletePolicyRequest(input)
-	return out, req.Send()
+	fmt.Printf("=)=)=)=)=)=)=)=)=)=) 11", out, "\n")
+
+	send := req.Send()
+	fmt.Printf("=)=)=)=)=)=)=)=)=)=) 12", send, "\n")
+	return out, send
 }
 
 // DeletePolicyWithContext is the same as DeletePolicy with the addition of

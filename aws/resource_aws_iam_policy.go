@@ -191,11 +191,27 @@ func resourceAwsIamPolicyUpdate(d *schema.ResourceData, meta interface{}) error 
 }
 
 func resourceAwsIamPolicyWithAttachmentCascadeDelete(d *schema.ResourceData, meta interface{}) error {
-	print("!!!!!!!!!!!!!!71\n")
-	if err := resourceAwsIamPolicyDeleter(d, d.Get("arn").(string), meta); err != nil {
+	print("!!!!!!!!!!!!!!7000\n")
+	arn := d.Get("arn")
+	print("!!!!!!!!!!!!!!7001\n")
+	arnS := arn.(string)
+	print("!!!!!!!!!!!!!!7002\n")
+	print("!!!!!!!!!!!!!!71 ", arnS, "\n")
+
+	//d.Set("user", d.Get())
+
+	resourceAwsIamUserPolicyAttachmentDelete(d, meta)
+
+	print("!!!!!!!!!!!!!!72\n")
+	v := d.Get("arn").(string)
+	print("!!!!!!!!!!!!!!73\n")
+
+
+	if err := resourceAwsIamPolicyDeleter(d, v, meta); err != nil {
+		print("!!!!!!!!!!!!!!731\n")
 		return err
 	}
-	print("!!!!!!!!!!!!!!72\n")
+	print("!!!!!!!!!!!!!!74\n")
 	return resourceAwsIamPolicyDelete(d, meta)
 }
 
@@ -204,9 +220,11 @@ func resourceAwsIamPolicyDelete(d *schema.ResourceData, meta interface{}) error 
 }
 
 func resourceAwsIamPolicyDeleter(d *schema.ResourceData, arn string, meta interface{}) error {
+	print("#!#!#!#!#!#!#!11" , arn, "\n")
 	iamconn := meta.(*AWSClient).iamconn
 
 	if err := iamPolicyDeleteNondefaultVersions(arn, iamconn); err != nil {
+		print("#!#!#!#!#!#!#!12\n")
 		return err
 	}
 
@@ -216,6 +234,7 @@ func resourceAwsIamPolicyDeleter(d *schema.ResourceData, arn string, meta interf
 
 	_, err := iamconn.DeletePolicy(request)
 	if err != nil {
+		fmt.Printf("#!#!#!#!#!#!#!13 %#v\n", err)
 		if iamerr, ok := err.(awserr.Error); ok && iamerr.Code() == "NoSuchEntity" {
 			return nil
 		}
@@ -302,7 +321,7 @@ func iamPolicyListVersions(arn string, iamconn *iam.IAM) ([]*iam.PolicyVersion, 
 }
 
 func readIamPolicy(d *schema.ResourceData, policy *iam.Policy) error {
-	print("/&/&/&/&/&/&/&/&11\n")
+	print("WE ARE READING readIamPolicy 11\n")
 	d.SetId(*policy.Arn)
 	if policy.Description != nil {
 		// the description isn't present in the response to CreatePolicy.
@@ -316,11 +335,11 @@ func readIamPolicy(d *schema.ResourceData, policy *iam.Policy) error {
 	if err := d.Set("name", policy.PolicyName); err != nil {
 		return err
 	}
-	print("/&/&/&/&/&/&/&/&12 ", policy.Arn, "\n")
+	print("WE ARE READING readIamPolicy 12 ", policy.Arn, "\n")
 	if err := d.Set("arn", policy.Arn); err != nil {
 		print("€€€€€€€€€€€€ readIamPolicy ", d.Get("arn"))
 		return err
 	}
-	print("/&/&/&/&/&/&/&/&13\n")
+	print("WE ARE READING readIamPolicy 13\n")
 	return nil
 }

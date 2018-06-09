@@ -17,7 +17,7 @@ import (
 func resourceAwsIamPolicyWithAttachment() *schema.Resource {
 	policy := resourceAwsIamPolicy()
 	policy.Create = resourceAwsIamPolicyWithAttachmentCreate
-	policy.Read = resourceAwsIamPolicyWithAttachmentRead1
+	policy.Read = resourceAwsIamPolicyWithAttachmentRead
 	policy.Delete = resourceAwsIamPolicyWithAttachmentCascadeDelete
 
 	attachment := resourceAwsIamPolicyAttachment()
@@ -134,7 +134,7 @@ func resourceAwsIamPolicyAttachmentCreator(d *schema.ResourceData, arnKey string
 	return resourceAwsIamPolicyAttachmentReader(d, arn, meta)
 }
 
-func resourceAwsIamPolicyWithAttachmentRead1(d *schema.ResourceData, meta interface{}) error {
+func resourceAwsIamPolicyWithAttachmentRead(d *schema.ResourceData, meta interface{}) error {
 	s := d.Get("arn").(string)
 
 	print("!!!!!!!!!!!!!! resourceAwsIamPolicyWithAttachmentRead 611", s, "\n")

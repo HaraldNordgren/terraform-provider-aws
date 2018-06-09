@@ -89,14 +89,21 @@ func resourceAwsIamUserPolicyAttachmentRead(d *schema.ResourceData, meta interfa
 }
 
 func resourceAwsIamUserPolicyAttachmentDelete(d *schema.ResourceData, meta interface{}) error {
+	print("@@@@@@@@@@@@@@@@ resourceAwsIamUserPolicyAttachmentDelete 10\n")
 	conn := meta.(*AWSClient).iamconn
-	user := d.Get("user").(string)
+	userRaw := d.Get("user")
+	print("@@@@@@@@@@@@@@@@ resourceAwsIamUserPolicyAttachmentDelete 11 ", userRaw == nil, "\n")
+	user := userRaw.(string)
+	print("@@@@@@@@@@@@@@@@ resourceAwsIamUserPolicyAttachmentDelete 12\n")
+	print("@@@@@@@@@@@@@@@@ resourceAwsIamUserPolicyAttachmentDelete 13 ", d.Get("policy_arn"), "\n")
 	arn := d.Get("policy_arn").(string)
 
 	err := detachPolicyFromUser(conn, user, arn)
 	if err != nil {
+		print("?&?&?&?&?&?&?& 13\n")
 		return fmt.Errorf("[WARN] Error removing policy %s from IAM User %s: %v", arn, user, err)
 	}
+	print("?&?&?&?&?&?&?& 14\n")
 	return nil
 }
 
