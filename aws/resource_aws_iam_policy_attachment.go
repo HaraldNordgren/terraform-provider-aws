@@ -253,9 +253,16 @@ func resourceAwsIamPolicyAttachmentUpdate(d *schema.ResourceData, meta interface
 }
 
 func resourceAwsIamPolicyAttachmentDelete(d *schema.ResourceData, meta interface{}) error {
+	return resourceAwsIamPolicyAttachmentDeleter(d, "policy_arn", meta)
+}
+
+func resourceAwsIamPolicyAttachmentDeleter(d *schema.ResourceData, policyARN string, meta interface{}) error {
+	print("=================11\n")
 	conn := meta.(*AWSClient).iamconn
 	name := d.Get("name").(string)
-	arn := d.Get("policy_arn").(string)
+	print("=================12\n")
+	arn := d.Get(policyARN).(string)
+	print("=================13\n")
 	users := expandStringList(d.Get("users").(*schema.Set).List())
 	roles := expandStringList(d.Get("roles").(*schema.Set).List())
 	groups := expandStringList(d.Get("groups").(*schema.Set).List())

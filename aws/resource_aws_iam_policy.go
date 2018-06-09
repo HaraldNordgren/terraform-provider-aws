@@ -192,7 +192,7 @@ func resourceAwsIamPolicyUpdate(d *schema.ResourceData, meta interface{}) error 
 
 func resourceAwsIamPolicyWithAttachmentCascadeDelete(d *schema.ResourceData, meta interface{}) error {
 	print("!!!!!!!!!!!!!!71\n")
-	if err := resourceAwsIamPolicyAttachmentDelete(d, meta); err != nil {
+	if err := resourceAwsIamPolicyDeleter(d, "arn", meta); err != nil {
 		return err
 	}
 	print("!!!!!!!!!!!!!!72\n")
@@ -200,14 +200,18 @@ func resourceAwsIamPolicyWithAttachmentCascadeDelete(d *schema.ResourceData, met
 }
 
 func resourceAwsIamPolicyDelete(d *schema.ResourceData, meta interface{}) error {
+	return resourceAwsIamPolicyDeleter(d, "policy_arn", meta)
+}
+
+func resourceAwsIamPolicyDeleter(d *schema.ResourceData, policyARN string, meta interface{}) error {
 	iamconn := meta.(*AWSClient).iamconn
 
-	if err := iamPolicyDeleteNondefaultVersions(d.Id(), iamconn); err != nil {
+	if err := iamPolicyDeleteNondefaultVersions(policyARN, iamconn); err != nil {
 		return err
 	}
 
 	request := &iam.DeletePolicyInput{
-		PolicyArn: aws.String(d.Id()),
+		PolicyArn: aws.String(policyARN),
 	}
 
 	_, err := iamconn.DeletePolicy(request)
