@@ -209,9 +209,16 @@ func resourceAwsIamPolicyWithAttachmentCascadeDelete(d *schema.ResourceData, met
 
 	set := d.Get("users").(*schema.Set)
 	for _, v := range set.List() {
+
+		fmt.Printf("!!!!!!!!!!!!!!7111 %#v\n", v)
+		d.Set("user", set)
+
 		s := v.(string)
 		fmt.Printf("!!!!!!!!!!!!!!712 %#v\n", s)
 		resourceAwsIamUserPolicyAttachmentDeleter(d, d.Get("arn").(string), s, meta)
+
+		fmt.Printf("!!!!!!!!!!!!!!713 %#v\n", s)
+		resourceAwsIamUserDelete(d, meta)
 	}
 
 	//resourceAwsIamUserPolicyAttachmentDeleteUsers(d, d.Get("users").([]*string), meta)
@@ -237,14 +244,18 @@ func resourceAwsIamPolicyDeleter(d *schema.ResourceData, arn string, meta interf
 	print("#!#!#!#!#!#!#!11" , arn, "\n")
 	iamconn := meta.(*AWSClient).iamconn
 
+	/*
 	if err := iamPolicyDeleteNondefaultVersions(arn, iamconn); err != nil {
-		print("#!#!#!#!#!#!#!12\n")
+		print("#!#!#!#!#!#!#!12 ", arn, "\n")
 		return err
 	}
+	*/
 
 	request := &iam.DeletePolicyInput{
 		PolicyArn: aws.String(arn),
 	}
+
+	fmt.Printf("=)=)=)=)=)=)=)=)=)=) %#v 10\n", *request)
 
 	_, err := iamconn.DeletePolicy(request)
 	if err != nil {
@@ -292,18 +303,25 @@ func iamPolicyPruneVersions(arn string, iamconn *iam.IAM) error {
 }
 
 func iamPolicyDeleteNondefaultVersions(arn string, iamconn *iam.IAM) error {
+	//print("#!#!#!#!#!#!#!21" , arn, "\n")
+	print("#!#!#!#!#!#!#!21\n")
 	versions, err := iamPolicyListVersions(arn, iamconn)
 	if err != nil {
+		print("#!#!#!#!#!#!#!211\n")
 		return err
 	}
 
+	print("#!#!#!#!#!#!#!22\n")
 	for _, version := range versions {
 		if *version.IsDefaultVersion {
+			print("#!#!#!#!#!#!#!223\n")
 			continue
 		}
 		if err := iamPolicyDeleteVersion(arn, *version.VersionId, iamconn); err != nil {
+			print("#!#!#!#!#!#!#!224\n")
 			return err
 		}
+		print("#!#!#!#!#!#!#!225 LOOP ITERATION DONE\n")
 	}
 
 	return nil
@@ -323,14 +341,19 @@ func iamPolicyDeleteVersion(arn, versionID string, iamconn *iam.IAM) error {
 }
 
 func iamPolicyListVersions(arn string, iamconn *iam.IAM) ([]*iam.PolicyVersion, error) {
+	print("#!#!#!#!#!#!#!31\n")
 	request := &iam.ListPolicyVersionsInput{
 		PolicyArn: aws.String(arn),
 	}
 
+	print("#!#!#!#!#!#!#!32 ", aws.String(arn), "\n")
+
 	response, err := iamconn.ListPolicyVersions(request)
 	if err != nil {
+		print("#!#!#!#!#!#!#!321 ", err, "\n")
 		return nil, fmt.Errorf("Error listing versions for IAM policy %s: %s", arn, err)
 	}
+	print("#!#!#!#!#!#!#!322 ", response, "\n")
 	return response.Versions, nil
 }
 
