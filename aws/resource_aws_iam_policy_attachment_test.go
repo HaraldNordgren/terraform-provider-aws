@@ -81,9 +81,14 @@ func TestAccAWSIAMPolicyWithAttachment(t *testing.T) {
 	var out iam.ListEntitiesForPolicyOutput
 
 	rString := acctest.RandString(8)
-	userNamePrefix := fmt.Sprintf("tf-acc-user-pa-pe1-%s-", rString)
-	policyName := fmt.Sprintf("tf-acc-policy-pa-pe1-%s-", rString)
-	attachmentName := fmt.Sprintf("tf-acc-attachment-pa-pe1-%s-", rString)
+	userNamePrefix := fmt.Sprintf("tf-acc-user-pa-pe-%s-", rString)
+	policyName := fmt.Sprintf("tf-acc-policy-pa-pe-%s-", rString)
+	attachmentName := fmt.Sprintf("tf-acc-attachment-pa-pe-%s-", rString)
+
+	print("!!!!!!!!!!! TestAccAWSIAMPolicyWithAttachment.rString ", rString, "\n")
+	print("!!!!!!!!!!! TestAccAWSIAMPolicyWithAttachment.userNamePrefix ", userNamePrefix, "\n")
+	print("!!!!!!!!!!! TestAccAWSIAMPolicyWithAttachment.policyName ", policyName, "\n")
+	print("!!!!!!!!!!! TestAccAWSIAMPolicyWithAttachment.attachmentName ", attachmentName, "\n")
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
@@ -93,7 +98,7 @@ func TestAccAWSIAMPolicyWithAttachment(t *testing.T) {
 			resource.TestStep{
 				Config: testAccAWSPolicyWithAttachmentConfig(userNamePrefix, policyName, attachmentName),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckAWSPolicyAttachmentExists("aws_iam_policy_attachment.test-paginated-attach-with-attachment", 101, &out),
+					testAccCheckAWSPolicyAttachmentExists("aws_iam_policy_with_attachment", 1, &out),
 				),
 			},
 		},
@@ -382,12 +387,12 @@ resource "aws_iam_policy_attachment" "test-paginated-attach" {
 
 func testAccAWSPolicyWithAttachmentConfig(userNamePrefix, policyName, attachmentName string) string {
 	return fmt.Sprintf(`
-resource "aws_iam_user" "user_with_attachment" {
-	count = 101
-	name = "${format("%s%%d_with_attachment", count.index + 1)}"
+resource "aws_iam_user" "user" {
+	count = 1
+	name = "${format("%s%%d", count.index + 1)}"
 }
-resource "aws_iam_policy_with_attachment" "policy_with_attachment" {
-	name = "%s_with_attachment"
+resource "aws_iam_policy_with_attachment" "policy" {
+	name = "%s"
 	description = "A test policy with attachment"
 	policy = <<EOF
 {
@@ -403,7 +408,7 @@ resource "aws_iam_policy_with_attachment" "policy_with_attachment" {
 ]
 }
 EOF
-	attachment_name = "%s-with-attachment"
-	users = ["${aws_iam_user.user_with_attachment.*.name}"]
+	attachment_name = "%s"
+	users = ["${aws_iam_user.user.*.name}"]
 }`, userNamePrefix, policyName, attachmentName)
 }

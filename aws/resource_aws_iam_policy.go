@@ -48,6 +48,7 @@ func resourceAwsIamPolicy() *schema.Resource {
 				ForceNew:      true,
 				ConflictsWith: []string{"name_prefix"},
 				ValidateFunc: func(v interface{}, k string) (ws []string, errors []error) {
+					print("!!!!!!!!!!!!!! resourceAwsIamPolicy 11\n")
 					// https://github.com/boto/botocore/blob/2485f5c/botocore/data/iam/2010-05-08/service-2.json#L8329-L8334
 					value := v.(string)
 					if len(value) > 128 {
@@ -66,6 +67,7 @@ func resourceAwsIamPolicy() *schema.Resource {
 				Optional: true,
 				ForceNew: true,
 				ValidateFunc: func(v interface{}, k string) (ws []string, errors []error) {
+					print("!!!!!!!!!!!!!! resourceAwsIamPolicy 12\n")
 					// https://github.com/boto/botocore/blob/2485f5c/botocore/data/iam/2010-05-08/service-2.json#L8329-L8334
 					value := v.(string)
 					if len(value) > 96 {
@@ -114,7 +116,17 @@ func resourceAwsIamPolicyCreate(d *schema.ResourceData, meta interface{}) error 
 	return readIamPolicy(d, response.Policy)
 }
 
+func resourceAwsIamPolicyWithAttachmentRead(d *schema.ResourceData, meta interface{}) error {
+	print("!!!!!!!!!!!!!!61\n")
+	if err := resourceAwsIamPolicyAttachmentReader(d, "arn", meta); err != nil {
+		return err
+	}
+	print("!!!!!!!!!!!!!!62\n")
+	return resourceAwsIamPolicyRead(d, meta)
+}
+
 func resourceAwsIamPolicyRead(d *schema.ResourceData, meta interface{}) error {
+	print("!!!!!!!!!!!!!!31\n")
 	iamconn := meta.(*AWSClient).iamconn
 
 	getPolicyRequest := &iam.GetPolicyInput{
@@ -175,6 +187,15 @@ func resourceAwsIamPolicyUpdate(d *schema.ResourceData, meta interface{}) error 
 		return fmt.Errorf("Error updating IAM policy %s: %s", d.Id(), err)
 	}
 	return nil
+}
+
+func resourceAwsIamPolicyWithAttachmentCascadeDelete(d *schema.ResourceData, meta interface{}) error {
+	print("!!!!!!!!!!!!!!71\n")
+	if err := resourceAwsIamPolicyAttachmentDelete(d, meta); err != nil {
+		return err
+	}
+	print("!!!!!!!!!!!!!!72\n")
+	return resourceAwsIamPolicyDelete(d, meta)
 }
 
 func resourceAwsIamPolicyDelete(d *schema.ResourceData, meta interface{}) error {

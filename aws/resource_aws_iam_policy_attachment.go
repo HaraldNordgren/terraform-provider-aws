@@ -15,20 +15,33 @@ import (
 )
 
 func resourceAwsIamPolicyWithAttachment() *schema.Resource {
-	policy := resourceAwsIamPolicy()
-
 	attachment := resourceAwsIamPolicyAttachment()
-	attachment.Read = resourceAwsIamPolicyWithAttachmentRead
+	/*
+	attachment.Importer = &schema.ResourceImporter{
+		State: schema.ImportStatePassthrough,
+	}
+	*/
+	//attachment.Create = resourceAwsIamPolicyWithAttachmentCreate
+	//attachment.Read = resourceAwsIamPolicyWithAttachmentRead
 	delete(attachment.Schema, "policy_arn")
 
+	policy := resourceAwsIamPolicy()
+	policy.Create = resourceAwsIamPolicyWithAttachmentCreate
+	policy.Read = resourceAwsIamPolicyWithAttachmentRead
+	policy.Delete = resourceAwsIamPolicyWithAttachmentCascadeDelete
+
+	schema := policy.Schema
 	for attachmentKey := range attachment.Schema {
+		print("!!!!!!!!!!!!!!11 ", attachmentKey, "\n")
 		switch attachmentKey {
 		case "name":
-			policy.Schema["attachment_name"] = attachment.Schema[attachmentKey]
+			schema["attachment_name"] = attachment.Schema[attachmentKey]
 		default:
-			policy.Schema[attachmentKey] = attachment.Schema[attachmentKey]
+			schema[attachmentKey] = attachment.Schema[attachmentKey]
 		}
+		//delete(schema, attachmentKey)
 	}
+	policy.Schema = schema
 
 	return policy
 }
@@ -75,10 +88,23 @@ func resourceAwsIamPolicyAttachment() *schema.Resource {
 }
 
 func resourceAwsIamPolicyAttachmentCreate(d *schema.ResourceData, meta interface{}) error {
+	return resourceAwsIamPolicyAttachmentCreator(d, "policy_arn", meta)
+}
+
+func resourceAwsIamPolicyWithAttachmentCreate(d *schema.ResourceData, meta interface{}) error {
+	print("!!!!!!!!!!!!!!51\n")
+	if err := resourceAwsIamPolicyCreate(d, meta); err != nil {
+		return err
+	}
+	print("!!!!!!!!!!!!!!52\n")
+	return resourceAwsIamPolicyAttachmentCreator(d, "arn", meta)
+}
+
+func resourceAwsIamPolicyAttachmentCreator(d *schema.ResourceData, arnKey string, meta interface{}) error {
 	conn := meta.(*AWSClient).iamconn
 
 	name := d.Get("name").(string)
-	arn := d.Get("policy_arn").(string)
+	arn := d.Get(arnKey).(string)
 	users := expandStringList(d.Get("users").(*schema.Set).List())
 	roles := expandStringList(d.Get("roles").(*schema.Set).List())
 	groups := expandStringList(d.Get("groups").(*schema.Set).List())
@@ -104,17 +130,15 @@ func resourceAwsIamPolicyAttachmentCreate(d *schema.ResourceData, meta interface
 	return resourceAwsIamPolicyAttachmentRead(d, meta)
 }
 
-func resourceAwsIamPolicyWithAttachmentRead(d *schema.ResourceData, meta interface{}) error {
-	return resourceAwsIamPolicyAttachmentReader(d, "arn", meta)
-}
-
 func resourceAwsIamPolicyAttachmentRead(d *schema.ResourceData, meta interface{}) error {
-	return resourceAwsIamPolicyAttachmentReader(d, "policy_arn", meta)
+	return resourceAwsIamPolicyAttachmentReader(d, "arn", meta)
 }
 
 func resourceAwsIamPolicyAttachmentReader(d *schema.ResourceData, arnKey string, meta interface{}) error {
 	conn := meta.(*AWSClient).iamconn
+	print("!!!!!!!!!!!!!!211\n")
 	arn := d.Get(arnKey).(string)
+	print("!!!!!!!!!!!!!!212\n")
 	name := d.Get("name").(string)
 
 	_, err := conn.GetPolicy(&iam.GetPolicyInput{
@@ -132,6 +156,8 @@ func resourceAwsIamPolicyAttachmentReader(d *schema.ResourceData, arnKey string,
 		return err
 	}
 
+	print("!!!!!!!!!!!!!!22\n")
+
 	ul := make([]string, 0)
 	rl := make([]string, 0)
 	gl := make([]string, 0)
@@ -139,6 +165,9 @@ func resourceAwsIamPolicyAttachmentReader(d *schema.ResourceData, arnKey string,
 	args := iam.ListEntitiesForPolicyInput{
 		PolicyArn: aws.String(arn),
 	}
+
+	print("!!!!!!!!!!!!!!23\n")
+
 	err = conn.ListEntitiesForPolicyPages(&args, func(page *iam.ListEntitiesForPolicyOutput, lastPage bool) bool {
 		for _, u := range page.PolicyUsers {
 			ul = append(ul, *u.UserName)
@@ -153,6 +182,9 @@ func resourceAwsIamPolicyAttachmentReader(d *schema.ResourceData, arnKey string,
 		}
 		return true
 	})
+
+	print("!!!!!!!!!!!!!!24\n")
+
 	if err != nil {
 		return err
 	}
@@ -164,6 +196,8 @@ func resourceAwsIamPolicyAttachmentReader(d *schema.ResourceData, arnKey string,
 	if userErr != nil || roleErr != nil || groupErr != nil {
 		return composeErrors(fmt.Sprint("[WARN} Error setting user, role, or group list from IAM Policy Attachment ", name, ":"), userErr, roleErr, groupErr)
 	}
+
+	print("!!!!!!!!!!!!!!25\n")
 
 	return nil
 }
