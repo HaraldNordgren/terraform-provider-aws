@@ -116,31 +116,27 @@ func resourceAwsIamPolicyCreate(d *schema.ResourceData, meta interface{}) error 
 	return readIamPolicy(d, response.Policy)
 }
 
-func resourceAwsIamPolicyWithAttachmentRead(d *schema.ResourceData, meta interface{}) error {
-	print("!!!!!!!!!!!!!!61\n")
-	if err := resourceAwsIamPolicyAttachmentReader(d, "arn", meta); err != nil {
-		return err
-	}
-	print("!!!!!!!!!!!!!!62\n")
-	return resourceAwsIamPolicyRead(d, meta)
-}
-
 func resourceAwsIamPolicyRead(d *schema.ResourceData, meta interface{}) error {
-	print("!!!!!!!!!!!!!!31\n")
 	iamconn := meta.(*AWSClient).iamconn
+	print("!!!!!!!!!!!!!!32\n")
 
 	getPolicyRequest := &iam.GetPolicyInput{
 		PolicyArn: aws.String(d.Id()),
 	}
+	print("!!!!!!!!!!!!!!33 ", d.Id(), "\n")
 
 	getPolicyResponse, err := iamconn.GetPolicy(getPolicyRequest)
 	if err != nil {
+		print("!!!!!!!!!!!!!!331\n")
 		if iamerr, ok := err.(awserr.Error); ok && iamerr.Code() == "NoSuchEntity" {
+			print("!!!!!!!!!!!!!!332\n")
 			d.SetId("")
 			return nil
 		}
 		return fmt.Errorf("Error reading IAM policy %s: %s", d.Id(), err)
 	}
+
+	print("!!!!!!!!!!!!!!34\n")
 
 	getPolicyVersionRequest := &iam.GetPolicyVersionInput{
 		PolicyArn: aws.String(d.Id()),
@@ -297,6 +293,7 @@ func iamPolicyListVersions(arn string, iamconn *iam.IAM) ([]*iam.PolicyVersion, 
 }
 
 func readIamPolicy(d *schema.ResourceData, policy *iam.Policy) error {
+	print("/&/&/&/&/&/&/&/&11\n")
 	d.SetId(*policy.Arn)
 	if policy.Description != nil {
 		// the description isn't present in the response to CreatePolicy.
@@ -310,8 +307,11 @@ func readIamPolicy(d *schema.ResourceData, policy *iam.Policy) error {
 	if err := d.Set("name", policy.PolicyName); err != nil {
 		return err
 	}
+	print("/&/&/&/&/&/&/&/&12 ", policy.Arn, "\n")
 	if err := d.Set("arn", policy.Arn); err != nil {
+		print("€€€€€€€€€€€€ readIamPolicy ", d.Get("arn"))
 		return err
 	}
+	print("/&/&/&/&/&/&/&/&13\n")
 	return nil
 }
