@@ -6115,6 +6115,8 @@ func (c *IAM) GetPolicyRequest(input *GetPolicyInput) (req *request.Request, out
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iam-2010-05-08/GetPolicy
 func (c *IAM) GetPolicy(input *GetPolicyInput) (*GetPolicyOutput, error) {
+	fmt.Printf("///////////11 %#v\n", *input)
+
 	req, out := c.GetPolicyRequest(input)
 	return out, req.Send()
 }

@@ -117,13 +117,18 @@ func resourceAwsIamPolicyCreate(d *schema.ResourceData, meta interface{}) error 
 }
 
 func resourceAwsIamPolicyRead(d *schema.ResourceData, meta interface{}) error {
+	id := aws.String(d.Id())
+	return resourceAwsIamPolicyReader(d, *id, meta)
+}
+
+func resourceAwsIamPolicyReader(d *schema.ResourceData, policyArn string, meta interface{}) error {
 	iamconn := meta.(*AWSClient).iamconn
 	print("!!!!!!!!!!!!!!32\n")
 
 	getPolicyRequest := &iam.GetPolicyInput{
-		PolicyArn: aws.String(d.Id()),
+		PolicyArn: &policyArn,
 	}
-	print("!!!!!!!!!!!!!!33 ", d.Id(), "\n")
+	print("!!!!!!!!!!!!!!33 ", policyArn, "\n")
 
 	getPolicyResponse, err := iamconn.GetPolicy(getPolicyRequest)
 	if err != nil {
@@ -139,7 +144,7 @@ func resourceAwsIamPolicyRead(d *schema.ResourceData, meta interface{}) error {
 	print("!!!!!!!!!!!!!!34\n")
 
 	getPolicyVersionRequest := &iam.GetPolicyVersionInput{
-		PolicyArn: aws.String(d.Id()),
+		PolicyArn: &policyArn,
 		VersionId: getPolicyResponse.Policy.DefaultVersionId,
 	}
 
@@ -149,7 +154,7 @@ func resourceAwsIamPolicyRead(d *schema.ResourceData, meta interface{}) error {
 			d.SetId("")
 			return nil
 		}
-		return fmt.Errorf("Error reading IAM policy version %s: %s", d.Id(), err)
+		return fmt.Errorf("Error reading IAM policy version %s: %s", policyArn, err)
 	}
 
 	policy, err := url.QueryUnescape(*getPolicyVersionResponse.PolicyVersion.Document)
