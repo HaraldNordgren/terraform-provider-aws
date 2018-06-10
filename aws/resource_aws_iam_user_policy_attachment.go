@@ -88,44 +88,19 @@ func resourceAwsIamUserPolicyAttachmentRead(d *schema.ResourceData, meta interfa
 	return nil
 }
 
-func resourceAwsIamUserPolicyAttachmentDeleteUsers(d *schema.ResourceData, users []*string, meta interface{}) error {
-	//func detachPolicyFromUsers(conn *iam.IAM, users []*string, arn string) error {
-
-	print("!! resourceAwsIamUserPolicyAttachmentDeleteUsers 11\n")
-
-	conn := meta.(*AWSClient).iamconn
-	print("!! resourceAwsIamUserPolicyAttachmentDeleteUsers 12\n")
-	return detachPolicyFromUsers(conn, users, d.Get("arn").(string))
-
-	/*
-	for _, user := range users {
-		resourceAwsIamUserPolicyAttachmentDeleter(d, user, meta)
-	}
-	*/
-}
-
 func resourceAwsIamUserPolicyAttachmentDelete(d *schema.ResourceData, meta interface{}) error {
 	return resourceAwsIamUserPolicyAttachmentDeleter(d, d.Get("arn").(string), d.Get("user"), meta)
 }
 
 func resourceAwsIamUserPolicyAttachmentDeleter(d *schema.ResourceData, arn string, userRaw interface{}, meta interface{}) error {
-	print("@@@@@@@@@@@@@@@@ resourceAwsIamUserPolicyAttachmentDelete 10\n")
 	conn := meta.(*AWSClient).iamconn
-	//userRaw := d.Get("user")
-	print("@@@@@@@@@@@@@@@@ resourceAwsIamUserPolicyAttachmentDelete 11 ", userRaw == nil, "\n")
-	user := userRaw.(string)
-	print("@@@@@@@@@@@@@@@@ resourceAwsIamUserPolicyAttachmentDelete 12\n")
-	print("@@@@@@@@@@@@@@@@ resourceAwsIamUserPolicyAttachmentDelete 13 ", d.Get("policy_arn"), "\n")
 
-	//user := userRaw.(string)
-	print("@@@@@@@@@@@@@@@@ resourceAwsIamUserPolicyAttachmentDelete 14 ", user, "\n")
+	user := userRaw.(string)
 
 	err := detachPolicyFromUser(conn, user, arn)
 	if err != nil {
-		print("?&?&?&?&?&?&?& 13\n")
 		return fmt.Errorf("[WARN] Error removing policy %s from IAM User %s: %v", arn, user, err)
 	}
-	print("?&?&?&?&?&?&?& 14\n")
 	return nil
 }
 
