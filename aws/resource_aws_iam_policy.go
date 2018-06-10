@@ -181,14 +181,13 @@ func resourceAwsIamPolicyUpdate(d *schema.ResourceData, meta interface{}) error 
 }
 
 func resourceAwsIamPolicyWithAttachmentCascadeDelete(d *schema.ResourceData, meta interface{}) error {
-	set := d.Get("users").(*schema.Set)
-	for _, v := range set.List() {
-		s := v.(string)
-		resourceAwsIamUserPolicyAttachmentDeleter(d, d.Get("arn").(string), s, meta)
+	arn := d.Get("arn").(string)
+	for _, v := range d.Get("users").(*schema.Set).List() {
+		resourceAwsIamUserPolicyAttachmentDeleter(d, arn, v, meta)
 		resourceAwsIamUserDelete(d, meta)
 	}
 
-	return resourceAwsIamPolicyDeleter(d, d.Get("arn").(string), meta)
+	return resourceAwsIamPolicyDeleter(d, arn, meta)
 }
 
 func resourceAwsIamPolicyDelete(d *schema.ResourceData, meta interface{}) error {
