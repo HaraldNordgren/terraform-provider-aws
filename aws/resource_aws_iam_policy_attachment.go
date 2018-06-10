@@ -126,16 +126,12 @@ func resourceAwsIamPolicyWithAttachmentRead(d *schema.ResourceData, meta interfa
 }
 
 func resourceAwsIamPolicyAttachmentRead(d *schema.ResourceData, meta interface{}) error {
-	policyARN := d.Get("policy_arn").(string)
-	return resourceAwsIamPolicyAttachmentReader(d, policyARN, meta)
+	return resourceAwsIamPolicyAttachmentReader(d, d.Get("policy_arn").(string), meta)
 }
 
 func resourceAwsIamPolicyAttachmentReader(d *schema.ResourceData, arn string, meta interface{}) error {
 	conn := meta.(*AWSClient).iamconn
-	print("!!!!!!!!!!!!!! resourceAwsIamPolicyAttachmentReader 211\n")
-	print("!!!!!!!!!!!!!! resourceAwsIamPolicyAttachmentReader 212\n")
 	name := d.Get("name").(string)
-	print("!!!!!!!!!!!!!! resourceAwsIamPolicyAttachmentReader 213\n")
 
 	_, err := conn.GetPolicy(&iam.GetPolicyInput{
 		PolicyArn: aws.String(arn),
@@ -152,8 +148,6 @@ func resourceAwsIamPolicyAttachmentReader(d *schema.ResourceData, arn string, me
 		return err
 	}
 
-	print("!!!!!!!!!!!!!! resourceAwsIamPolicyAttachmentReader 22\n")
-
 	ul := make([]string, 0)
 	rl := make([]string, 0)
 	gl := make([]string, 0)
@@ -162,16 +156,12 @@ func resourceAwsIamPolicyAttachmentReader(d *schema.ResourceData, arn string, me
 		PolicyArn: aws.String(arn),
 	}
 
-	print("!!!!!!!!!!!!!! resourceAwsIamPolicyAttachmentReader 23\n")
-
 	err = conn.ListEntitiesForPolicyPages(&args, func(page *iam.ListEntitiesForPolicyOutput, lastPage bool) bool {
 		for _, u := range page.PolicyUsers {
-			print("!!!!!!!!!!!!!! resourceAwsIamPolicyAttachmentReader 231 ", u.String(), " \n")
 			ul = append(ul, *u.UserName)
 		}
 
 		for _, r := range page.PolicyRoles {
-			print("!!!!!!!!!!!!!! resourceAwsIamPolicyAttachmentReader 232 ", rl, " \n")
 			rl = append(rl, *r.RoleName)
 		}
 
@@ -181,8 +171,6 @@ func resourceAwsIamPolicyAttachmentReader(d *schema.ResourceData, arn string, me
 		return true
 	})
 
-	print("!!!!!!!!!!!!!! resourceAwsIamPolicyAttachmentReader 24\n")
-
 	if err != nil {
 		return err
 	}
@@ -191,15 +179,9 @@ func resourceAwsIamPolicyAttachmentReader(d *schema.ResourceData, arn string, me
 	roleErr := d.Set("roles", rl)
 	groupErr := d.Set("groups", gl)
 
-	for _, u := range ul {
-		print("!!!!!!!!!!!!!! resourceAwsIamPolicyAttachmentReader 241 ", u, " \n")
-	}
-
 	if userErr != nil || roleErr != nil || groupErr != nil {
 		return composeErrors(fmt.Sprint("[WARN} Error setting user, role, or group list from IAM Policy Attachment ", name, ":"), userErr, roleErr, groupErr)
 	}
-
-	print("!!!!!!!!!!!!!! resourceAwsIamPolicyAttachmentReader 25 ", d.Get("users"), "\n")
 
 	return nil
 }

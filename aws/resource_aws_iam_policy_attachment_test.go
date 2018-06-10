@@ -62,11 +62,6 @@ func TestAccAWSIAMPolicyAttachment_paginatedEntities(t *testing.T) {
 	policyName := fmt.Sprintf("tf-acc-policy-pa-pe-%s-", rString)
 	attachmentName := fmt.Sprintf("tf-acc-attachment-pa-pe-%s-", rString)
 
-	print("!!!!!!!!!!! TestAccAWSIAMPolicyAttachment_paginatedEntities.rString ", rString, "\n")
-	print("!!!!!!!!!!! TestAccAWSIAMPolicyAttachment_paginatedEntities.userNamePrefix ", userNamePrefix, "\n")
-	print("!!!!!!!!!!! TestAccAWSIAMPolicyAttachment_paginatedEntities.policyName ", policyName, "\n")
-	print("!!!!!!!!!!! TestAccAWSIAMPolicyAttachment_paginatedEntities.attachmentName ", attachmentName, "\n")
-
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
 		Providers:    testAccProviders,
@@ -90,11 +85,6 @@ func TestAccAWSIAMPolicyWithAttachment(t *testing.T) {
 	userNamePrefix := fmt.Sprintf("tf-acc-user-pa-pe-%s-", rString)
 	policyName := fmt.Sprintf("tf-acc-policy-pa-pe-%s-", rString)
 	attachmentName := fmt.Sprintf("tf-acc-attachment-pa-pe-%s-", rString)
-
-	print("!!!!!!!!!!! TestAccAWSIAMPolicyWithAttachment.rString ", rString, "\n")
-	print("!!!!!!!!!!! TestAccAWSIAMPolicyWithAttachment.userNamePrefix ", userNamePrefix, "\n")
-	print("!!!!!!!!!!! TestAccAWSIAMPolicyWithAttachment.policyName ", policyName, "\n")
-	print("!!!!!!!!!!! TestAccAWSIAMPolicyWithAttachment.attachmentName ", attachmentName, "\n")
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
