@@ -70,7 +70,7 @@ func TestAccAWSIAMPolicyAttachment_paginatedEntities(t *testing.T) {
 			{
 				Config: testAccAWSPolicyPaginatedAttachConfig(userNamePrefix, policyName, attachmentName),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckAWSPolicyAttachmentExists("aws_iam_policy_attachment.test-paginated-attach", 1, &out),
+					testAccCheckAWSPolicyAttachmentExists("aws_iam_policy_attachment.test-paginated-attach", 101, &out),
 				),
 			},
 		},
@@ -354,7 +354,7 @@ resource "aws_iam_policy_attachment" "test-attach" {
 func testAccAWSPolicyPaginatedAttachConfig(userNamePrefix, policyName, attachmentName string) string {
 	return fmt.Sprintf(`
 resource "aws_iam_user" "user" {
-	count = 1
+	count = 101
 	name = "${format("%s%%d", count.index + 1)}"
 }
 resource "aws_iam_policy" "policy" {
