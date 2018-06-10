@@ -36,6 +36,5 @@ func dataSourceAwsIAMPolicy() *schema.Resource {
 
 func dataSourceAwsIAMPolicyRead(d *schema.ResourceData, meta interface{}) error {
 	d.SetId(d.Get("arn").(string))
-	print("()()()()()()()() dataSourceAwsIAMPolicyRead ", d.Get("arn").(string), "\n")
 	return resourceAwsIamPolicyRead(d, meta)
 }

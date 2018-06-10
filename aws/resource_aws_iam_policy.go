@@ -115,8 +115,7 @@ func resourceAwsIamPolicyCreate(d *schema.ResourceData, meta interface{}) error 
 }
 
 func resourceAwsIamPolicyRead(d *schema.ResourceData, meta interface{}) error {
-	id := aws.String(d.Id())
-	return resourceAwsIamPolicyReader(d, *id, meta)
+	return resourceAwsIamPolicyReader(d, d.Id(), meta)
 }
 
 func resourceAwsIamPolicyReader(d *schema.ResourceData, policyArn string, meta interface{}) error {
