@@ -121,7 +121,7 @@ func resourceAwsIamPolicyRead(d *schema.ResourceData, meta interface{}) error {
 func resourceAwsIamPolicyReader(d *schema.ResourceData, policyArn string, meta interface{}) error {
 	iamconn := meta.(*AWSClient).iamconn
 	getPolicyRequest := &iam.GetPolicyInput{
-		PolicyArn: &policyArn,
+		PolicyArn: aws.String(policyArn),
 	}
 
 	getPolicyResponse, err := iamconn.GetPolicy(getPolicyRequest)
@@ -134,7 +134,7 @@ func resourceAwsIamPolicyReader(d *schema.ResourceData, policyArn string, meta i
 	}
 
 	getPolicyVersionRequest := &iam.GetPolicyVersionInput{
-		PolicyArn: &policyArn,
+		PolicyArn: aws.String(policyArn),
 		VersionId: getPolicyResponse.Policy.DefaultVersionId,
 	}
 
