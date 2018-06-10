@@ -94,7 +94,6 @@ func resourceAwsIamUserPolicyAttachmentDelete(d *schema.ResourceData, meta inter
 
 func resourceAwsIamUserPolicyAttachmentDeleter(d *schema.ResourceData, arn string, userRaw interface{}, meta interface{}) error {
 	conn := meta.(*AWSClient).iamconn
-
 	user := userRaw.(string)
 
 	err := detachPolicyFromUser(conn, user, arn)

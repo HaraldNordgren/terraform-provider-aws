@@ -67,7 +67,7 @@ func TestAccAWSIAMPolicyAttachment_paginatedEntities(t *testing.T) {
 		Providers:    testAccProviders,
 		CheckDestroy: testAccCheckAWSPolicyAttachmentDestroy,
 		Steps: []resource.TestStep{
-			{
+			resource.TestStep{
 				Config: testAccAWSPolicyPaginatedAttachConfig(userNamePrefix, policyName, attachmentName),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckAWSPolicyAttachmentExists("aws_iam_policy_attachment.test-paginated-attach", 101, &out),
@@ -78,8 +78,8 @@ func TestAccAWSIAMPolicyAttachment_paginatedEntities(t *testing.T) {
 }
 
 func TestAccAWSIAMPolicyWithAttachment(t *testing.T) {
-	var conf iam.GetUserOutput
-	var out1 iam.GetPolicyOutput
+	var userOut iam.GetUserOutput
+	var policyOut iam.GetPolicyOutput
 
 	rString := acctest.RandString(8)
 	userNamePrefix := fmt.Sprintf("tf-acc-user-pa-pe-%s-", rString)
@@ -91,11 +91,11 @@ func TestAccAWSIAMPolicyWithAttachment(t *testing.T) {
 		Providers:    testAccProviders,
 		CheckDestroy: testAccCheckAWSPolicyAttachmentDestroy,
 		Steps: []resource.TestStep{
-			resource.TestStep{
+			{
 				Config: testAccAWSPolicyWithAttachmentConfig(userNamePrefix, policyName, attachmentName),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckAWSUserExists("aws_iam_user.user", &conf),
-					testAccCheckAWSPolicyExists("aws_iam_policy_with_attachment.policy", &out1),
+					testAccCheckAWSUserExists("aws_iam_user.user", &userOut),
+					testAccCheckAWSPolicyExists("aws_iam_policy_with_attachment.policy", &policyOut),
 				),
 			},
 		},
