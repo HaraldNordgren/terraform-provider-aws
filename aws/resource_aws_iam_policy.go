@@ -295,7 +295,6 @@ func iamPolicyListVersions(arn string, iamconn *iam.IAM) ([]*iam.PolicyVersion, 
 }
 
 func readIamPolicy(d *schema.ResourceData, policy *iam.Policy) error {
-	print("WE ARE READING readIamPolicy 11\n")
 	d.SetId(*policy.Arn)
 	if policy.Description != nil {
 		// the description isn't present in the response to CreatePolicy.
@@ -309,11 +308,8 @@ func readIamPolicy(d *schema.ResourceData, policy *iam.Policy) error {
 	if err := d.Set("name", policy.PolicyName); err != nil {
 		return err
 	}
-	print("WE ARE READING readIamPolicy 12 ", policy.Arn, "\n")
 	if err := d.Set("arn", policy.Arn); err != nil {
-		print("€€€€€€€€€€€€ readIamPolicy ", d.Get("arn"))
 		return err
 	}
-	print("WE ARE READING readIamPolicy 13\n")
 	return nil
 }

@@ -21,25 +21,16 @@ func resourceAwsIamPolicyWithAttachment() *schema.Resource {
 	policy.Delete = resourceAwsIamPolicyWithAttachmentCascadeDelete
 
 	attachment := resourceAwsIamPolicyAttachment()
-	/*
-	attachment.Importer = &schema.ResourceImporter{
-		State: schema.ImportStatePassthrough,
-	}
-	*/
 	delete(attachment.Schema, "policy_arn")
 
-	schema := policy.Schema
 	for attachmentKey := range attachment.Schema {
-		print("!!!!!!!!!!!!!!11 ", attachmentKey, "\n")
 		switch attachmentKey {
 		case "name":
-			schema["attachment_name"] = attachment.Schema[attachmentKey]
+			policy.Schema["attachment_name"] = attachment.Schema[attachmentKey]
 		default:
-			schema[attachmentKey] = attachment.Schema[attachmentKey]
+			policy.Schema[attachmentKey] = attachment.Schema[attachmentKey]
 		}
-		//delete(schema, attachmentKey)
 	}
-	policy.Schema = schema
 
 	return policy
 }
@@ -86,11 +77,9 @@ func resourceAwsIamPolicyAttachment() *schema.Resource {
 }
 
 func resourceAwsIamPolicyWithAttachmentCreate(d *schema.ResourceData, meta interface{}) error {
-	print("!!!!!!!!!!!!!!51\n")
 	if err := resourceAwsIamPolicyCreate(d, meta); err != nil {
 		return err
 	}
-	print("!!!!!!!!!!!!!!52\n")
 	return resourceAwsIamPolicyAttachmentCreator(d, "arn", meta)
 }
 
@@ -99,18 +88,13 @@ func resourceAwsIamPolicyAttachmentCreate(d *schema.ResourceData, meta interface
 }
 
 func resourceAwsIamPolicyAttachmentCreator(d *schema.ResourceData, arnKey string, meta interface{}) error {
-	print("(/(/(/(/(/(/(/(/(/(/(/(/(11\n")
 	conn := meta.(*AWSClient).iamconn
 
 	name := d.Get("name").(string)
-	print("(/(/(/(/(/(/(/(/(/(/(/(/(12\n")
 	arn := d.Get(arnKey).(string)
-	print("(/(/(/(/(/(/(/(/(/(/(/(/(13\n")
 	users := expandStringList(d.Get("users").(*schema.Set).List())
 	roles := expandStringList(d.Get("roles").(*schema.Set).List())
 	groups := expandStringList(d.Get("groups").(*schema.Set).List())
-
-	print("(/(/(/(/(/(/(/(/(/(/(/(/(14\n")
 
 	if len(users) == 0 && len(roles) == 0 && len(groups) == 0 {
 		return fmt.Errorf("[WARN] No Users, Roles, or Groups specified for IAM Policy Attachment %s", name)
@@ -130,22 +114,15 @@ func resourceAwsIamPolicyAttachmentCreator(d *schema.ResourceData, arnKey string
 		}
 	}
 	d.SetId(d.Get("name").(string))
-	print("(/(/(/(/(/(/(/(/(/(/(/(/(15\n")
 	return resourceAwsIamPolicyAttachmentReader(d, arn, meta)
 }
 
 func resourceAwsIamPolicyWithAttachmentRead(d *schema.ResourceData, meta interface{}) error {
 	s := d.Get("arn").(string)
-
-	print("!!!!!!!!!!!!!! resourceAwsIamPolicyWithAttachmentRead 611", s, "\n")
-	print("!!!!!!!!!!!!!! resourceAwsIamPolicyWithAttachmentRead 612", d.Id(), "\n")
-	//return resourceAwsIamPolicyRead(d, meta)
-
 	if err := resourceAwsIamPolicyReader(d, s, meta); err != nil {
 		return err
 	}
-	print("!!!!!!!!!!!!!!62 ", d.Id(), "\n")
-	return resourceAwsIamPolicyAttachmentReader(d, d.Get("arn").(string), meta)
+	return resourceAwsIamPolicyAttachmentReader(d, s, meta)
 }
 
 func resourceAwsIamPolicyAttachmentRead(d *schema.ResourceData, meta interface{}) error {
