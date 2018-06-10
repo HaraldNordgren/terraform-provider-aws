@@ -155,7 +155,6 @@ func resourceAwsIamPolicyAttachmentReader(d *schema.ResourceData, arn string, me
 	args := iam.ListEntitiesForPolicyInput{
 		PolicyArn: aws.String(arn),
 	}
-
 	err = conn.ListEntitiesForPolicyPages(&args, func(page *iam.ListEntitiesForPolicyOutput, lastPage bool) bool {
 		for _, u := range page.PolicyUsers {
 			ul = append(ul, *u.UserName)
@@ -170,7 +169,6 @@ func resourceAwsIamPolicyAttachmentReader(d *schema.ResourceData, arn string, me
 		}
 		return true
 	})
-
 	if err != nil {
 		return err
 	}
